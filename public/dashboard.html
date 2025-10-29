@@ -268,64 +268,100 @@
     }
     
     async function refresh() {
-      try {
-        const response = await fetch('http://localhost:3003/api/quote/So11111111111111111111111111111111111111112/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/0.1');
-        const data = await response.json();
-        
-        // Update price
-        const priceEl = document.getElementById('price');
-        priceEl.textContent = '$' + data.price.toFixed(2);
-        priceEl.className = 'metric ' + (data.priceChange > 0 ? 'green' : data.priceChange < 0 ? 'red' : 'yellow');
-        
-        const changeEl = document.getElementById('priceChange');
-        changeEl.textContent = (data.priceChange > 0 ? '+' : '') + data.priceChange.toFixed(2) + '%';
-        changeEl.className = data.priceChange > 0 ? 'green' : 'red';
-        
-        // Update RSI
-        const rsi = data.indicators.rsi;
-        const rsiEl = document.getElementById('rsi');
+  try {
+    const response = await fetch('http://localhost:3003/api/quote/So11111111111111111111111111111111111111112/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/0.1');
+    const data = await response.json();
+    
+    // Check if data exists
+    if (!data || !data.indicators) {
+      console.log('Waiting for data...');
+      return;
+    }
+    
+    // Update price - with null checks
+    const priceEl = document.getElementById('price');
+    if (priceEl && data.price) {
+      priceEl.textContent = '$' + data.price.toFixed(2);
+      priceEl.className = 'metric ' + (data.priceChange > 0 ? 'green' : data.priceChange < 0 ? 'red' : 'yellow');
+    }
+    
+    const changeEl = document.getElementById('priceChange');
+    if (changeEl && data.priceChange !== undefined) {
+      changeEl.textContent = (data.priceChange > 0 ? '+' : '') + data.priceChange.toFixed(2) + '%';
+      changeEl.className = data.priceChange > 0 ? 'green' : 'red';
+    }
+    
+    // Update RSI - with null checks
+    const rsi = data.indicators.rsi;
+    if (rsi) {
+      const rsiEl = document.getElementById('rsi');
+      if (rsiEl) {
         rsiEl.textContent = rsi.value.toFixed(1);
         rsiEl.className = 'metric ' + (rsi.signal === 'OVERSOLD' ? 'green' : rsi.signal === 'OVERBOUGHT' ? 'red' : 'yellow');
-        document.getElementById('rsiSignal').textContent = rsi.signal;
-        document.getElementById('rsiStrength').textContent = rsi.strength;
-        
-        // Update MACD
-        const macd = data.indicators.macd;
-        document.getElementById('macdValue').textContent = macd.macd.toFixed(4);
-        document.getElementById('macdSignal').textContent = macd.signal.toFixed(4);
-        
-        const histEl = document.getElementById('macdHistogram');
+      }
+      
+      const rsiSignalEl = document.getElementById('rsiSignal');
+      const rsiStrengthEl = document.getElementById('rsiStrength');
+      if (rsiSignalEl) rsiSignalEl.textContent = rsi.signal;
+      if (rsiStrengthEl) rsiStrengthEl.textContent = rsi.strength;
+    }
+    
+    // Update MACD - with null checks
+    const macd = data.indicators.macd;
+    if (macd) {
+      const macdValueEl = document.getElementById('macdValue');
+      const macdSignalEl = document.getElementById('macdSignal');
+      const histEl = document.getElementById('macdHistogram');
+      const crossEl = document.getElementById('macdCrossover');
+      
+      if (macdValueEl) macdValueEl.textContent = macd.macd.toFixed(4);
+      if (macdSignalEl) macdSignalEl.textContent = macd.signal.toFixed(4);
+      
+      if (histEl) {
         histEl.textContent = macd.histogram.toFixed(4);
         histEl.className = macd.histogram > 0 ? 'green' : 'red';
-        
-        const crossEl = document.getElementById('macdCrossover');
+      }
+      
+      if (crossEl) {
         crossEl.textContent = macd.crossover;
         crossEl.className = macd.crossover === 'BULLISH' ? 'green' : macd.crossover === 'BEARISH' ? 'red' : '';
-        
-        // Update MACD chart
+      }
+      
+      // Update MACD chart
+      if (macdChart) {
         const histColor = macd.histogram > 0 ? '#4ade80' : '#f87171';
         macdChart.data.datasets[0].data = [macd.histogram];
         macdChart.data.datasets[0].backgroundColor = [histColor];
         macdChart.update();
-        
-        // Update AI Signal
-        const signal = data.indicators.signal;
-        const badge = document.getElementById('signalBadge');
+      }
+    }
+    
+    // Update AI Signal - with null checks
+    const signal = data.indicators.signal;
+    if (signal) {
+      const badge = document.getElementById('signalBadge');
+      if (badge) {
         badge.textContent = signal.action.replace('_', ' ');
         badge.className = 'signal-badge badge-' + 
           (signal.action.includes('BUY') ? 'buy' : signal.action.includes('SELL') ? 'sell' : 'hold');
-        
-        document.getElementById('confidenceBar').style.width = signal.confidence + '%';
-        document.getElementById('confidenceText').textContent = signal.confidence.toFixed(0) + '%';
-        
+      }
+      
+      const confidenceBar = document.getElementById('confidenceBar');
+      const confidenceText = document.getElementById('confidenceText');
+      if (confidenceBar) confidenceBar.style.width = signal.confidence + '%';
+      if (confidenceText) confidenceText.textContent = signal.confidence.toFixed(0) + '%';
+      
+      const reasonsEl = document.getElementById('reasons');
+      if (reasonsEl && signal.reasons) {
         const reasonsHTML = signal.reasons.map(r => `<div class="reason">${r}</div>`).join('');
-        document.getElementById('reasons').innerHTML = reasonsHTML;
-        
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error loading data. Make sure the server is running on port 3003.');
+        reasonsEl.innerHTML = reasonsHTML;
       }
     }
+    
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
     
     initCharts();
     refresh();

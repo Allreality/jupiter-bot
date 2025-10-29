@@ -16,9 +16,6 @@ export interface MACDResult {
   crossover: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
 }
 
-/**
- * Calculate RSI (Relative Strength Index)
- */
 export function calculateRSI(prices: number[], period: number = 14): RSIResult {
   if (prices.length < period + 1) {
     return { value: 50, signal: 'NEUTRAL', strength: 'WEAK' };
@@ -57,6 +54,10 @@ export function calculateRSI(prices: number[], period: number = 14): RSIResult {
   const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
   const rsi = 100 - (100 / (1 + rs));
 
+  if (isNaN(rsi) || !isFinite(rsi)) {
+    return { value: 50, signal: 'NEUTRAL', strength: 'WEAK' };
+  }
+
   let signal: 'OVERSOLD' | 'NEUTRAL' | 'OVERBOUGHT';
   let strength: 'STRONG' | 'MODERATE' | 'WEAK';
 
@@ -74,30 +75,30 @@ export function calculateRSI(prices: number[], period: number = 14): RSIResult {
   return { value: rsi, signal, strength };
 }
 
-/**
- * Calculate EMA
- */
 function calculateEMA(prices: number[], period: number): number[] {
+  if (prices.length === 0) return [];
+  
   const ema: number[] = [];
   const multiplier = 2 / (period + 1);
 
   let sum = 0;
-  for (let i = 0; i < period; i++) {
+  for (let i = 0; i < Math.min(period, prices.length); i++) {
     sum += prices[i];
   }
-  ema.push(sum / period);
+  ema.push(sum / Math.min(period, prices.length));
 
   for (let i = period; i < prices.length; i++) {
     const currentEMA = (prices[i] - ema[ema.length - 1]) * multiplier + ema[ema.length - 1];
-    ema.push(currentEMA);
+    if (isNaN(currentEMA) || !isFinite(currentEMA)) {
+      ema.push(ema[ema.length - 1]);
+    } else {
+      ema.push(currentEMA);
+    }
   }
 
   return ema;
 }
 
-/**
- * Calculate MACD
- */
 export function calculateMACD(
   prices: number[],
   fastPeriod: number = 12,
@@ -111,22 +112,35 @@ export function calculateMACD(
   const fastEMA = calculateEMA(prices, fastPeriod);
   const slowEMA = calculateEMA(prices, slowPeriod);
 
+  if (fastEMA.length === 0 || slowEMA.length === 0) {
+    return { macd: 0, signal: 0, histogram: 0, crossover: 'NEUTRAL' };
+  }
+
   const macdLine: number[] = [];
   const startIndex = slowPeriod - fastPeriod;
   for (let i = 0; i < slowEMA.length; i++) {
-    macdLine.push(fastEMA[i + startIndex] - slowEMA[i]);
+    const macdValue = fastEMA[i + startIndex] - slowEMA[i];
+    if (isNaN(macdValue) || !isFinite(macdValue)) {
+      macdLine.push(0);
+    } else {
+      macdLine.push(macdValue);
+    }
   }
 
   const signalLine = calculateEMA(macdLine, signalPeriod);
 
-  const macd = macdLine[macdLine.length - 1];
-  const signal = signalLine[signalLine.length - 1];
+  const macd = macdLine[macdLine.length - 1] || 0;
+  const signal = signalLine[signalLine.length - 1] || 0;
   const histogram = macd - signal;
+
+  if (isNaN(macd) || isNaN(signal) || isNaN(histogram)) {
+    return { macd: 0, signal: 0, histogram: 0, crossover: 'NEUTRAL' };
+  }
 
   let crossover: 'BULLISH' | 'BEARISH' | 'NEUTRAL' = 'NEUTRAL';
   if (macdLine.length > 1 && signalLine.length > 1) {
-    const prevMACD = macdLine[macdLine.length - 2];
-    const prevSignal = signalLine[signalLine.length - 2];
+    const prevMACD = macdLine[macdLine.length - 2] || 0;
+    const prevSignal = signalLine[signalLine.length - 2] || 0;
 
     if (prevMACD <= prevSignal && macd > signal) {
       crossover = 'BULLISH';
@@ -138,9 +152,6 @@ export function calculateMACD(
   return { macd, signal, histogram, crossover };
 }
 
-/**
- * Generate trading signal
- */
 export function generateTradingSignal(rsi: RSIResult, macd: MACDResult): {
   action: 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
   confidence: number;
@@ -168,7 +179,7 @@ export function generateTradingSignal(rsi: RSIResult, macd: MACDResult): {
   if (macd.histogram > 0) {
     score += 0.5;
     reasons.push('MACD histogram positive');
-  } else {
+  } else if (macd.histogram < 0) {
     score -= 0.5;
     reasons.push('MACD histogram negative');
   }

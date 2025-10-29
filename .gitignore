@@ -26,3 +26,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.env
+.env
+.env
+*.key
+*.pem

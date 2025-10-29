@@ -1,13 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
 import { RaydiumClient, RAYDIUM_TOKENS } from '../raydium/client';
 import { PORTS } from '../config/ports';
 import { calculateRSI, calculateMACD, generateTradingSignal, PriceData } from '../utils/technicalIndicators';
 
 const app = express();
 const raydiumClient = new RaydiumClient();
-
 const priceHistory: PriceData[] = [];
 let lastPrice = 0;
 
@@ -15,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'Raydium Dashboard with Technical Indicators' });
+  res.json({ status: 'ok', service: 'Raydium Dashboard API' });
 });
 
 app.get('/api/quote/:from/:to/:amount', async (req, res) => {
@@ -37,7 +35,8 @@ app.get('/api/quote/:from/:to/:amount', async (req, res) => {
     res.json({ 
       ...quote, 
       priceChange,
-      indicators: { rsi, macd, signal }
+      indicators: { rsi, macd, signal },
+      dataPoints: priceHistory.length
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -49,25 +48,27 @@ app.get('/api/indicators', (req, res) => {
   const rsi = calculateRSI(prices);
   const macd = calculateMACD(prices);
   const signal = generateTradingSignal(rsi, macd);
-  
   res.json({ rsi, macd, signal });
 });
 
+app.get('/api/history/:from/:to', (req, res) => {
+  res.json(priceHistory);
+});
+
 app.get('/', (req, res) => {
-  res.send(`
-    <h1>Raydium Dashboard with Technical Indicators</h1>
-    <p>Test the API:</p>
-    <ul>
-      <li><a href="/api/quote/${RAYDIUM_TOKENS.SOL}/${RAYDIUM_TOKENS.USDC}/0.1">Get Quote with Indicators</a></li>
-      <li><a href="/api/indicators">Get Current Indicators</a></li>
-    </ul>
-  `);
+  res.json({ 
+    message: 'Raydium Dashboard API',
+    endpoints: [
+      '/health',
+      '/api/quote/:from/:to/:amount',
+      '/api/indicators',
+      '/api/history/:from/:to'
+    ]
+  });
 });
 
 const PORT = PORTS.DASHBOARD;
 
 app.listen(PORT, () => {
-  console.log(`🌊 Raydium Dashboard with Technical Indicators running on http://localhost:${PORT}`);
-  console.log(`📊 Features: RSI, MACD, AI Trading Signals`);
-  console.log(`🔗 Test: http://localhost:${PORT}/api/quote/${RAYDIUM_TOKENS.SOL}/${RAYDIUM_TOKENS.USDC}/0.1`);
+  console.log(`🌊 Raydium Dashboard API running on http://localhost:${PORT}`);
 });
