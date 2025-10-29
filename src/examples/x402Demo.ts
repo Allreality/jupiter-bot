@@ -28,6 +28,20 @@ async function demo() {
   });
 
   // 2. Create x402 handler for an agent
+
+  // Show MIDNIGHT agents specifically
+  console.log('════════════════════════════════════════\n');
+  console.log('🌙 MIDNIGHT INFRASTRUCTURE Agents:');
+  const midnightAgents = wallets.filter(w => w.agentId.startsWith('midnight-'));
+  midnightAgents.forEach(agent => {
+    console.log(`  • ${agent.name} (${agent.agentId})`);
+    console.log(`    Address: ${agent.publicKey}`);
+    console.log(`    Revenue Split: Agent 90% | Treasury 10%`);
+    if (agent.services && agent.services.length > 0) {
+      console.log(`    Services: ${agent.services.join(', ')}`);
+    }
+    console.log('');
+  });
   console.log('════════════════════════════════════════\n');
   console.log('🤖 Creating x402 Handler for trading-bot...\n');
   

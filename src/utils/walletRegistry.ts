@@ -8,6 +8,9 @@ interface AgentWallet {
   type: 'treasury' | 'agent' | 'multisig';
   spendingLimit?: number;
   permissions?: string[];
+  services?: string[];
+  revenueShare?: number;
+  governanceFee?: number;
   createdAt: string;
 }
 
@@ -21,7 +24,16 @@ const walletRegistry: AgentWallet[] = [
     publicKey: '6QKbYCqU3SDp1jgcFGcRRwpekQY2CEVK7AMVHpU8iWSH',
     name: 'Temne Abara Nation Treasury',
     type: 'treasury',
+    revenueShare: 0.10,
     permissions: ['send', 'receive', 'governance', 'delegate'],
+    createdAt: '2025-10-29T00:00:00Z'
+  },
+  {
+    agentId: 'midnitebotbank',
+    publicKey: '3Amc3tkRvijtrRtE6XVAkYd8UxF9VKqm7mqDdyT6FPWm',
+    name: 'Midnitebotbank Operational Reserve',
+    type: 'treasury',
+    permissions: ['send', 'receive', 'fund-agents'],
     createdAt: '2025-10-29T00:00:00Z'
   },
   {
@@ -41,6 +53,42 @@ const walletRegistry: AgentWallet[] = [
     spendingLimit: 100,
     permissions: ['send', 'receive', 'pay-x402'],
     createdAt: '2025-10-29T00:00:00Z'
+  },
+  {
+    agentId: 'midnight-integration-agent',
+    publicKey: '7xbS8JuRLoVeQsb1Sp6Bc4ESShp6LEb2eoJtjohr65KK',
+    name: 'Midnight Integration Specialist',
+    type: 'agent',
+    revenueShare: 0.90,
+    governanceFee: 0.10,
+    spendingLimit: 1000,
+    permissions: ['send', 'receive', 'provide-data', 'pay-x402'],
+    services: ['midnight-zkproof-consulting', 'midnight-integration-analysis', 'midnight-smart-contract-templates'],
+    createdAt: '2025-10-29T06:00:00Z'
+  },
+  {
+    agentId: 'midnight-compliance-agent',
+    publicKey: '4ppPain22Fx54vXvE4Fvk7cYjx4emkfTHVAQpobc4pLv',
+    name: 'Midnight Compliance Oracle',
+    type: 'agent',
+    revenueShare: 0.90,
+    governanceFee: 0.10,
+    spendingLimit: 500,
+    permissions: ['send', 'receive', 'provide-compliance', 'pay-x402'],
+    services: ['midnight-compliance-data', 'midnight-regulatory-guidance', 'midnight-audit-trails'],
+    createdAt: '2025-10-29T06:00:00Z'
+  },
+  {
+    agentId: 'midnight-developer-agent',
+    publicKey: 'FXL7intKqJPSvXorpNLePakfRbjqs3iJU18ftSZ9GVTr',
+    name: 'Midnight Developer Assistant',
+    type: 'agent',
+    revenueShare: 0.90,
+    governanceFee: 0.10,
+    spendingLimit: 300,
+    permissions: ['send', 'receive', 'provide-code', 'pay-x402'],
+    services: ['midnight-api-docs', 'midnight-sdk-examples', 'midnight-integration-patterns'],
+    createdAt: '2025-10-29T06:00:00Z'
   }
 ];
 
@@ -70,6 +118,10 @@ export function getAgentWallet(agentId: string): WalletWithKeypair | null {
 
 export function getAllWallets(): AgentWallet[] {
   return walletRegistry;
+}
+
+export function getMidnightAgents(): AgentWallet[] {
+  return walletRegistry.filter(w => w.agentId.startsWith('midnight-'));
 }
 
 export function registerWallet(wallet: AgentWallet): boolean {
