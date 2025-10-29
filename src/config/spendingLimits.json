@@ -1,0 +1,29 @@
+// src/config/spendingLimits.json
+{
+  "global": {
+    "dailyLimit": 1000,
+    "weeklyLimit": 5000,
+    "monthlyLimit": 20000,
+    "currency": "USD"
+  },
+  "agentLimits": {
+    "temne-abara-nation": {
+      "dailyLimit": null,
+      "weeklyLimit": null,
+      "monthlyLimit": null,
+      "note": "Treasury - no spending limits"
+    },
+    "trading-bot": {
+      "dailyLimit": 500,
+      "weeklyLimit": 2500,
+      "monthlyLimit": 10000,
+      "allowedServices": ["premium-api-access", "jupiter-pro-quotes", "ai-trading-signals"]
+    },
+    "akil-agent": {
+      "dailyLimit": 100,
+      "weeklyLimit": 500,
+      "monthlyLimit": 2000,
+      "allowedServices": ["premium-api-access", "jupiter-pro-quotes"]
+    }
+  }
+}

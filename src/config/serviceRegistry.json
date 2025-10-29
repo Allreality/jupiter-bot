@@ -1,0 +1,26 @@
+[
+  {
+    "serviceId": "premium-api-access",
+    "name": "Premium API Access",
+    "description": "Access to premium trading signals and market data",
+    "endpoint": "https://api.example.com/premium",
+    "price": 0.1,
+    "currency": "USDC",
+    "recipient": "6QKbYCqU3SDp1jgcFGcRRwpekQY2CEVK7AMVHpU8iWSH",
+    "chainId": "solana-mainnet",
+    "rateLimit": "100/day",
+    "enabled": true
+  },
+  {
+    "serviceId": "jupiter-pro-quotes",
+    "name": "Jupiter Pro Quotes",
+    "description": "Advanced quote aggregation with MEV protection",
+    "endpoint": "https://api.example.com/jupiter-pro",
+    "price": 0.05,
+    "currency": "USDC",
+    "recipient": "6QKbYCqU3SDp1jgcFGcRRwpekQY2CEVK7AMVHpU8iWSH",
+    "chainId": "solana-mainnet",
+    "rateLimit": "1000/day",
+    "enabled": true
+  }
+]
