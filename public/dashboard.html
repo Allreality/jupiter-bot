@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Raydium Trading Dashboard - Technical Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      padding: 20px;
+    }
+    .container { max-width: 1600px; margin: 0 auto; }
+    
+    .header { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px; 
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+    .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+    
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card {
+      background: #1a1a1a;
+      padding: 25px;
+      border-radius: 15px;
+      border: 1px solid #333;
+      transition: all 0.3s;
+    }
+    .card:hover { border-color: #667eea; transform: translateY(-5px); }
+    .card h2 { color: #667eea; margin-bottom: 20px; font-size: 1.3em; }
+    
+    .metric {
+      font-size: 3em;
+      font-weight: bold;
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .metric-label {
+      font-size: 0.9em;
+      color: #888;
+      text-align: center;
+      margin-top: -10px;
+    }
+    
+    .green { color: #4ade80; }
+    .red { color: #f87171; }
+    .yellow { color: #fbbf24; }
+    
+    .signal-badge {
+      display: inline-block;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin: 10px auto;
+      text-align: center;
+    }
+    .badge-buy { background: #166534; color: #4ade80; }
+    .badge-sell { background: #7f1d1d; color: #f87171; }
+    .badge-hold { background: #92400e; color: #fbbf24; }
+    
+    .confidence-bar {
+      height: 30px;
+      background: #333;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80 0%, #667eea 50%, #f87171 100%);
+      transition: width 0.5s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #333;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 10px;
+    }
+    button:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5); }
+    
+    .reason {
+      background: #2a2a2a;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border-left: 3px solid #667eea;
+    }
+    
+    canvas { max-height: 300px; }
+    
+    .loading {
+      text-align: center;
+      color: #888;
+      padding: 40px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌊 Raydium Trading Dashboard</h1>
+      <p>Advanced Technical Analysis • RSI • MACD • AI Signals</p>
+    </div>
+    
+    <div class="grid">
+      <!-- Current Price -->
+      <div class="card">
+        <h2>💰 Current Price</h2>
+        <div id="price" class="metric yellow">--</div>
+        <div class="metric-label">SOL/USDC</div>
+        <div class="stat-row">
+          <span>Change:</span>
+          <span id="priceChange">--</span>
+        </div>
+        <button onclick="refresh()">🔄 Refresh Quote</button>
+      </div>
+      
+      <!-- RSI -->
+      <div class="card">
+        <h2>📈 RSI (14)</h2>
+        <div id="rsi" class="metric yellow">--</div>
+        <div class="metric-label" id="rsiSignal">NEUTRAL</div>
+        <div class="stat-row">
+          <span>Strength:</span>
+          <span id="rsiStrength">--</span>
+        </div>
+        <div class="stat-row">
+          <span>Oversold:</span>
+          <span class="green">&lt; 30</span>
+        </div>
+        <div class="stat-row">
+          <span>Overbought:</span>
+          <span class="red">&gt; 70</span>
+        </div>
+      </div>
+      
+      <!-- MACD -->
+      <div class="card">
+        <h2>📊 MACD</h2>
+        <div class="stat-row">
+          <span>MACD Line:</span>
+          <span id="macdValue">--</span>
+        </div>
+        <div class="stat-row">
+          <span>Signal Line:</span>
+          <span id="macdSignal">--</span>
+        </div>
+        <div class="stat-row">
+          <span>Histogram:</span>
+          <span id="macdHistogram">--</span>
+        </div>
+        <div class="stat-row">
+          <span>Crossover:</span>
+          <span id="macdCrossover">--</span>
+        </div>
+        <canvas id="macdChart"></canvas>
+      </div>
+    </div>
+    
+    <!-- AI Signal -->
+    <div class="grid">
+      <div class="card" style="grid-column: 1 / -1;">
+        <h2>🤖 AI Trading Signal</h2>
+        <div style="text-align: center; margin: 30px 0;">
+          <div id="signalBadge" class="signal-badge badge-hold">HOLD</div>
+        </div>
+        <div class="confidence-bar">
+          <div id="confidenceBar" class="confidence-fill" style="width: 0%">
+            <span id="confidenceText">0%</span>
+          </div>
+        </div>
+        <h3 style="color: #667eea; margin: 20px 0;">Analysis Reasons:</h3>
+        <div id="reasons"></div>
+      </div>
+    </div>
+    
+    <!-- Price Chart -->
+    <div class="card">
+      <h2>📈 Price History</h2>
+      <canvas id="priceChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    let macdChart, priceChart;
+    
+    function initCharts() {
+      // MACD Chart
+      const macdCtx = document.getElementById('macdChart').getContext('2d');
+      macdChart = new Chart(macdCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Histogram'],
+          datasets: [{
+            label: 'MACD Histogram',
+            data: [0],
+            backgroundColor: ['#667eea']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#888' }, grid: { color: '#333' } }
+          }
+        }
+      });
+      
+      // Price Chart  
+      const priceCtx = document.getElementById('priceChart').getContext('2d');
+      priceChart = new Chart(priceCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Price',
+            data: [],
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#fff' } } },
+          scales: {
+            x: { ticks: { color: '#888' }, grid: { color: '#333' } },
+            y: { ticks: { color: '#888' }, grid: { color: '#333' } }
+          }
+        }
+      });
+    }
+    
+    async function refresh() {
+      try {
+        const response = await fetch('http://localhost:3003/api/quote/So11111111111111111111111111111111111111112/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/0.1');
+        const data = await response.json();
+        
+        // Update price
+        const priceEl = document.getElementById('price');
+        priceEl.textContent = '$' + data.price.toFixed(2);
+        priceEl.className = 'metric ' + (data.priceChange > 0 ? 'green' : data.priceChange < 0 ? 'red' : 'yellow');
+        
+        const changeEl = document.getElementById('priceChange');
+        changeEl.textContent = (data.priceChange > 0 ? '+' : '') + data.priceChange.toFixed(2) + '%';
+        changeEl.className = data.priceChange > 0 ? 'green' : 'red';
+        
+        // Update RSI
+        const rsi = data.indicators.rsi;
+        const rsiEl = document.getElementById('rsi');
+        rsiEl.textContent = rsi.value.toFixed(1);
+        rsiEl.className = 'metric ' + (rsi.signal === 'OVERSOLD' ? 'green' : rsi.signal === 'OVERBOUGHT' ? 'red' : 'yellow');
+        document.getElementById('rsiSignal').textContent = rsi.signal;
+        document.getElementById('rsiStrength').textContent = rsi.strength;
+        
+        // Update MACD
+        const macd = data.indicators.macd;
+        document.getElementById('macdValue').textContent = macd.macd.toFixed(4);
+        document.getElementById('macdSignal').textContent = macd.signal.toFixed(4);
+        
+        const histEl = document.getElementById('macdHistogram');
+        histEl.textContent = macd.histogram.toFixed(4);
+        histEl.className = macd.histogram > 0 ? 'green' : 'red';
+        
+        const crossEl = document.getElementById('macdCrossover');
+        crossEl.textContent = macd.crossover;
+        crossEl.className = macd.crossover === 'BULLISH' ? 'green' : macd.crossover === 'BEARISH' ? 'red' : '';
+        
+        // Update MACD chart
+        const histColor = macd.histogram > 0 ? '#4ade80' : '#f87171';
+        macdChart.data.datasets[0].data = [macd.histogram];
+        macdChart.data.datasets[0].backgroundColor = [histColor];
+        macdChart.update();
+        
+        // Update AI Signal
+        const signal = data.indicators.signal;
+        const badge = document.getElementById('signalBadge');
+        badge.textContent = signal.action.replace('_', ' ');
+        badge.className = 'signal-badge badge-' + 
+          (signal.action.includes('BUY') ? 'buy' : signal.action.includes('SELL') ? 'sell' : 'hold');
+        
+        document.getElementById('confidenceBar').style.width = signal.confidence + '%';
+        document.getElementById('confidenceText').textContent = signal.confidence.toFixed(0) + '%';
+        
+        const reasonsHTML = signal.reasons.map(r => `<div class="reason">${r}</div>`).join('');
+        document.getElementById('reasons').innerHTML = reasonsHTML;
+        
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading data. Make sure the server is running on port 3003.');
+      }
+    }
+    
+    initCharts();
+    refresh();
+    
+    // Auto-refresh every 10 seconds
+    setInterval(refresh, 10000);
+  </script>
+</body>
+</html>
