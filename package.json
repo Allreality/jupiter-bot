@@ -30,7 +30,9 @@
     "start:x402": "ts-node src/server/x402Server.ts",
     "start:midnight": "ts-node src/server/midnightAPI.ts",
     "start:project": "ts-node src/server/projectDashboard.ts",
-    "start:everything": "concurrently -n \"TRADING,X402,MIDNIGHT,PROJECT,DASHBOARD,UI,ANALYZER\" -c \"blue,green,magenta,cyan,yellow,white,gray\" \"npm run start:trading\" \"npm run start:x402\" \"npm run start:midnight\" \"npm run start:project\" \"npm run start:dashboard\" \"npm run dashboard:ui\" \"npm run view\""
+    "start:everything": "concurrently -n \"TRADING,X402,MIDNIGHT,PROJECT,DASHBOARD,UI,ANALYZER\" -c \"blue,green,magenta,cyan,yellow,white,gray\" \"npm run start:trading\" \"npm run start:x402\" \"npm run start:midnight\" \"npm run start:project\" \"npm run start:dashboard\" \"npm run dashboard:ui\" \"npm run view\"",
+    "start:tracker": "ts-node src/server/projectTracker.ts",
+    "start:all-with-tracker": "concurrently -n \"TRADING,X402,MIDNIGHT,PROJECT,DASHBOARD,TRACKER,UI\" -c \"blue,green,magenta,cyan,yellow,red,white\" \"npm run start:trading\" \"npm run start:x402\" \"npm run start:midnight\" \"npm run start:project\" \"npm run start:dashboard\" \"npm run start:tracker\" \"npm run dashboard:ui\""
   },
   "keywords": [
     "solana",

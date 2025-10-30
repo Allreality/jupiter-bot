@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Project Tracker - Time Management</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .nav-bar {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .nav-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+    
+    .nav-btn.active {
+      background: white;
+      color: #667eea;
+    }
+    
+    .container { max-width: 1600px; margin: 0 auto; }
+    
+    .header {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .timer-display {
+      font-size: 3em;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .quick-start {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      color: white;
+    }
+    
+    .quick-start h2 {
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+    
+    .quick-start-controls {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .project-select {
+      flex: 1;
+      min-width: 300px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1em;
+      background: white;
+      cursor: pointer;
+    }
+    
+    .btn-quick-start {
+      padding: 15px 40px;
+      background: #4ade80;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-quick-start:hover {
+      background: #22c55e;
+      transform: scale(1.05);
+    }
+    
+    .btn-quick-start:disabled {
+      background: #6b7280;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-add-project {
+      padding: 15px 30px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 2px solid white;
+      border-radius: 10px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-add-project:hover {
+      background: white;
+      color: #667eea;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    .card:hover { transform: translateY(-5px); }
+    
+    .card.active {
+      border: 3px solid #4ade80;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      animation: pulse-border 2s infinite;
+    }
+    
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(74, 222, 128, 0.8); }
+    }
+    
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .project-name {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .category-badge {
+      background: #667eea;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.85em;
+    }
+    
+    .time-display {
+      font-size: 2em;
+      font-weight: bold;
+      text-align: center;
+      margin: 15px 0;
+      color: #333;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 5px 0;
+    }
+    
+    .btn-start {
+      background: #4ade80;
+      color: white;
+    }
+    .btn-start:hover { background: #22c55e; }
+    
+    .btn-stop {
+      background: #f87171;
+      color: white;
+    }
+    .btn-stop:hover { background: #ef4444; }
+    
+    .summary-card {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .stat-box {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      font-size: 2em;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #334155;
+    }
+    
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+    
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    
+    .btn-primary {
+      flex: 1;
+      padding: 15px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+    
+    .btn-secondary {
+      flex: 1;
+      padding: 15px;
+      background: #e2e8f0;
+      color: #334155;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+    
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-bar">
+      <a href="/index.html" class="nav-btn">🏠 Home</a>
+      <a href="http://localhost:5003" target="_blank" class="nav-btn">🎛️ Master Control</a>
+      <a href="/dashboard.html" class="nav-btn">📈 Live Trading</a>
+      <a href="/projects-dashboard.html" class="nav-btn active">⏱️ Projects</a>
+      <a href="http://localhost:5001/api/revenue" target="_blank" class="nav-btn">💰 Revenue</a>
+    </div>
+    
+    <div class="header">
+      <div>
+        <h1>⏱️ Project Time Tracker</h1>
+        <p id="activeProject">No active timer</p>
+      </div>
+      <div class="timer-display pulse" id="globalTimer">00:00:00</div>
+    </div>
+    
+    <div class="quick-start">
+      <h2>🚀 Quick Start</h2>
+      <div class="quick-start-controls">
+        <select id="projectSelector" class="project-select">
+          <option value="">Select a project to start working...</option>
+        </select>
+        <button id="quickStartBtn" class="btn-quick-start" disabled>
+          ▶️ Start Working
+        </button>
+        <button class="btn-add-project" id="addProjectBtn">
+          ➕ Add Project
+        </button>
+      </div>
+    </div>
+    
+    <div class="grid">
+      <div class="card summary-card">
+        <h2>📊 Summary</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div>Total Time</div>
+            <div class="stat-value" id="totalTime">0h 0m</div>
+          </div>
+          <div class="stat-box">
+            <div>Active Projects</div>
+            <div class="stat-value" id="activeCount">0</div>
+          </div>
+          <div class="stat-box">
+            <div>Total Projects</div>
+            <div class="stat-value" id="totalProjects">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid" id="projectsGrid"></div>
+  </div>
+  
+  <div id="addModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">➕ Add New Project</div>
+      <form id="addProjectForm">
+        <div class="form-group">
+          <label class="form-label">Project Name *</label>
+          <input type="text" id="projectName" class="form-input" placeholder="e.g., Website Redesign" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project ID *</label>
+          <input type="text" id="projectId" class="form-input" placeholder="e.g., website-redesign" required>
+          <small style="color: #64748b;">Lowercase, use dashes instead of spaces</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="projectCategory" class="form-select">
+            <option value="">Select category...</option>
+            <option value="Development">Development</option>
+            <option value="Design">Design</option>
+            <option value="Research">Research</option>
+            <option value="Creative">Creative</option>
+            <option value="DeFi">DeFi</option>
+            <option value="Blockchain">Blockchain</option>
+            <option value="Planning">Planning</option>
+            <option value="Infrastructure">Infrastructure</option>
+            <option value="Gaming">Gaming</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="projectDescription" class="form-input" placeholder="Brief description of the project">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Add Project</button>
+          <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let activeTimerInterval = null;
+    let activeProjectId = null;
+    let allProjects = [];
+    
+    console.log('🚀 Project Tracker initialized');
+    
+    // Auto-generate ID from name
+    const projectNameInput = document.getElementById('projectName');
+    if (projectNameInput) {
+      projectNameInput.addEventListener('input', (e) => {
+        const name = e.target.value;
+        const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        document.getElementById('projectId').value = id;
+      });
+    }
+    
+    async function loadProjects() {
+      try {
+        console.log('📊 Loading projects from API...');
+        const response = await fetch('http://localhost:5004/api/projects');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        allProjects = await response.json();
+        console.log('✅ Loaded', allProjects.length, 'projects');
+        
+        const selector = document.getElementById('projectSelector');
+        const currentSelection = selector.value;
+        
+        selector.innerHTML = '<option value="">Select a project to start working...</option>' +
+          allProjects
+            .filter(p => !p.isActive)
+            .map(p => `<option value="${p.id}">${p.name}${p.category ? ` (${p.category})` : ''}</option>`)
+            .join('');
+        
+        if (currentSelection) {
+          selector.value = currentSelection;
+        }
+        
+        const grid = document.getElementById('projectsGrid');
+        grid.innerHTML = allProjects.map(project => `
+          <div class="card ${project.isActive ? 'active' : ''}" id="project-${project.id}">
+            <div class="project-header">
+              <div class="project-name">${project.name}</div>
+              ${project.category ? `<div class="category-badge">${project.category}</div>` : ''}
+            </div>
+            <div class="time-display" id="time-${project.id}">${project.totalTimeFormatted}</div>
+            ${project.isActive ? `
+              <button class="btn btn-stop" onclick="stopTimer('${project.id}')">⏹️ Stop Timer</button>
+            ` : `
+              <button class="btn btn-start" onclick="startTimer('${project.id}')">▶️ Start Timer</button>
+            `}
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('❌ Error loading projects:', error);
+        document.getElementById('projectSelector').innerHTML = 
+          '<option value="">Error loading projects - check console</option>';
+      }
+    }
+    
+    async function loadSummary() {
+      try {
+        const response = await fetch('http://localhost:5004/api/summary');
+        const summary = await response.json();
+        
+        document.getElementById('totalTime').textContent = summary.totalTime;
+        document.getElementById('activeCount').textContent = summary.activeProjects;
+        document.getElementById('totalProjects').textContent = summary.totalProjects;
+      } catch (error) {
+        console.error('Error loading summary:', error);
+      }
+    }
+    
+    async function checkActiveTimer() {
+      try {
+        const response = await fetch('http://localhost:5004/api/timer/active');
+        const data = await response.json();
+        
+        if (data.active) {
+          activeProjectId = data.projectId;
+          const project = allProjects.find(p => p.id === data.projectId);
+          document.getElementById('activeProject').textContent = `Timer running for: ${project?.name || data.projectId}`;
+          document.getElementById('globalTimer').textContent = data.elapsedFormatted;
+          
+          document.getElementById('quickStartBtn').disabled = true;
+          document.getElementById('quickStartBtn').textContent = '⏹️ Stop to Start Another';
+          
+          if (!activeTimerInterval) {
+            activeTimerInterval = setInterval(updateGlobalTimer, 1000);
+          }
+        } else {
+          activeProjectId = null;
+          document.getElementById('activeProject').textContent = 'No active timer';
+          document.getElementById('globalTimer').textContent = '00:00:00';
+          
+          const selector = document.getElementById('projectSelector');
+          document.getElementById('quickStartBtn').disabled = !selector.value;
+          document.getElementById('quickStartBtn').textContent = '▶️ Start Working';
+          
+          if (activeTimerInterval) {
+            clearInterval(activeTimerInterval);
+            activeTimerInterval = null;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking timer:', error);
+      }
+    }
+    
+    async function quickStart() {
+      const selector = document.getElementById('projectSelector');
+      const projectId = selector.value;
+      
+      if (!projectId) {
+        alert('Please select a project first!');
+        return;
+      }
+      
+      await startTimer(projectId);
+    }
+    
+    async function startTimer(projectId) {
+      try {
+        const response = await fetch('http://localhost:5004/api/timer/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          alert(data.error || 'Failed to start timer');
+          return;
+        }
+        
+        console.log('✅ Timer started for:', projectId);
+        await loadProjects();
+        await checkActiveTimer();
+      } catch (error) {
+        alert('Error starting timer: ' + error.message);
+      }
+    }
+    
+    async function stopTimer(projectId) {
+      try {
+        await fetch('http://localhost:5004/api/timer/stop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId })
+        });
+        console.log('⏹️ Timer stopped for:', projectId);
+        await loadProjects();
+        await loadSummary();
+        await checkActiveTimer();
+      } catch (error) {
+        alert('Error stopping timer: ' + error.message);
+      }
+    }
+    
+    function updateGlobalTimer() {
+      checkActiveTimer();
+    }
+    
+    function showAddModal() {
+      document.getElementById('addModal').classList.add('show');
+    }
+    
+    function hideAddModal() {
+      document.getElementById('addModal').classList.remove('show');
+      document.getElementById('addProjectForm').reset();
+    }
+    
+    async function addProject(event) {
+      event.preventDefault();
+      
+      const projectData = {
+        id: document.getElementById('projectId').value,
+        name: document.getElementById('projectName').value,
+        category: document.getElementById('projectCategory').value,
+        description: document.getElementById('projectDescription').value
+      };
+      
+      try {
+        const response = await fetch('http://localhost:5004/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(projectData)
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          alert(error.error || 'Failed to add project');
+          return;
+        }
+        
+        hideAddModal();
+        await loadProjects();
+        await loadSummary();
+        
+        alert(`✅ Project "${projectData.name}" added successfully!`);
+      } catch (error) {
+        alert('Error adding project: ' + error.message);
+      }
+    }
+    
+    // Event listeners
+    document.getElementById('projectSelector')?.addEventListener('change', (e) => {
+      const btn = document.getElementById('quickStartBtn');
+      btn.disabled = !e.target.value || activeProjectId !== null;
+    });
+    
+    document.getElementById('quickStartBtn')?.addEventListener('click', quickStart);
+    document.getElementById('addProjectBtn')?.addEventListener('click', showAddModal);
+    document.getElementById('cancelBtn')?.addEventListener('click', hideAddModal);
+    document.getElementById('addProjectForm')?.addEventListener('submit', addProject);
+    
+    document.getElementById('addModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'addModal') {
+        hideAddModal();
+      }
+    });
+    
+    // Initialize
+    console.log('🎯 Starting initialization...');
+    loadProjects();
+    loadSummary();
+    checkActiveTimer();
+    
+    // Refresh every 5 seconds
+    setInterval(() => {
+      loadProjects();
+      loadSummary();
+    }, 5000);
+    
+    console.log('✅ Event listeners attached');
+  </script>
+</body>
+</html>

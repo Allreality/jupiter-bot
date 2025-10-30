@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Akil Studio - Dashboard Hub</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #ec4899 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 50px;
+    }
+    
+    .header h1 {
+      font-size: 4em;
+      margin-bottom: 10px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .header p {
+      font-size: 1.5em;
+      opacity: 0.9;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+    }
+    
+    .dashboard-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    }
+    
+    .dashboard-icon {
+      font-size: 4em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .dashboard-title {
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #1e3a8a;
+    }
+    
+    .dashboard-description {
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .dashboard-features {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .dashboard-features li {
+      padding: 8px 0;
+      color: #475569;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .dashboard-features li:last-child {
+      border-bottom: none;
+    }
+    
+    .dashboard-features li::before {
+      content: "✓ ";
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    .status-bar {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 40px;
+      color: white;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .status-item {
+      text-align: center;
+    }
+    
+    .status-value {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .status-label {
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌊 Akil Studio</h1>
+      <p>Unified Dashboard Hub</p>
+    </div>
+    
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-value pulse">🟢</div>
+        <div class="status-label">All Systems Online</div>
+      </div>
+      <div class="status-item">
+        <div class="status-value" id="serviceCount">7</div>
+        <div class="status-label">Services Running</div>
+      </div>
+      <div class="status-item">
+        <div class="status-value" id="projectCount">15+</div>
+        <div class="status-label">Active Projects</div>
+      </div>
+      <div class="status-item">
+        <div class="status-value" id="uptime">Running</div>
+        <div class="status-label">System Status</div>
+      </div>
+    </div>
+    
+    <div class="dashboard-grid">
+      <a href="http://localhost:5003" target="_blank" class="dashboard-card">
+        <div class="dashboard-icon">🎛️</div>
+        <div class="dashboard-title">Master Control</div>
+        <div class="dashboard-description">
+          Central hub for all trading bot infrastructure and services
+        </div>
+        <ul class="dashboard-features">
+          <li>7 Microservices Overview</li>
+          <li>Service Health Monitoring</li>
+          <li>Quick Access Links</li>
+          <li>System Statistics</li>
+        </ul>
+      </a>
+      
+      <a href="http://localhost:3004/dashboard.html" target="_blank" class="dashboard-card">
+        <div class="dashboard-icon">📈</div>
+        <div class="dashboard-title">Live Trading</div>
+        <div class="dashboard-description">
+          Real-time market analysis and trading signals
+        </div>
+        <ul class="dashboard-features">
+          <li>Live SOL/USDC Price</li>
+          <li>RSI & MACD Indicators</li>
+          <li>AI Trading Signals</li>
+          <li>Auto-refreshing Charts</li>
+        </ul>
+      </a>
+      
+      <a href="http://localhost:3004/projects-dashboard.html" target="_blank" class="dashboard-card">
+        <div class="dashboard-icon">⏱️</div>
+        <div class="dashboard-title">Project Tracker</div>
+        <div class="dashboard-description">
+          Time tracking and project management for all your work
+        </div>
+        <ul class="dashboard-features">
+          <li>Start/Stop Timers</li>
+          <li>15+ Active Projects</li>
+          <li>Time Analytics</li>
+          <li>Project Summaries</li>
+        </ul>
+      </a>
+      
+      <a href="http://localhost:5001/api/revenue" target="_blank" class="dashboard-card">
+        <div class="dashboard-icon">💰</div>
+        <div class="dashboard-title">Revenue Tracking</div>
+        <div class="dashboard-description">
+          Monitor earnings from all monetizable services
+        </div>
+        <ul class="dashboard-features">
+          <li>x402 Payments</li>
+          <li>Agent Revenue Split</li>
+          <li>Transaction History</li>
+          <li>Analytics Dashboard</li>
+        </ul>
+      </a>
+      
+      <a href="http://localhost:5002/api/services" target="_blank" class="dashboard-card">
+        <div class="dashboard-icon">🌙</div>
+        <div class="dashboard-title">MIDNIGHT Services</div>
+        <div class="dashboard-description">
+          8 AI-powered services for blockchain development
+        </div>
+        <ul class="dashboard-features">
+          <li>zkProof Consulting</li>
+          <li>Security Audits</li>
+          <li>Smart Contract Review</li>
+          <li>Developer Assistant</li>
+        </ul>
+      </a>
+      
+      <a href="http://localhost:5000/health" target="_blank" class="dashboard-card">
+        <div class="dashboard-icon">🤖</div>
+        <div class="dashboard-title">Trading Bot API</div>
+        <div class="dashboard-description">
+          Direct API access to trading bot functionality
+        </div>
+        <ul class="dashboard-features">
+          <li>Paper Trading</li>
+          <li>Live Trading Ready</li>
+          <li>Portfolio Management</li>
+          <li>RESTful API</li>
+        </ul>
+      </a>
+    </div>
+  </div>
+  
+  <script>
+    // Update counts dynamically
+    async function updateStats() {
+      try {
+        const summaryResponse = await fetch('http://localhost:5004/api/summary');
+        const summary = await summaryResponse.json();
+        document.getElementById('projectCount').textContent = summary.totalProjects;
+      } catch (error) {
+        console.log('Project tracker not available');
+      }
+    }
+    
+    updateStats();
+    setInterval(updateStats, 10000);
+  </script>
+</body>
+</html>
