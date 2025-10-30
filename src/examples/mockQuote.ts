@@ -1,5 +1,5 @@
 import { SafetyChecker } from '../utils/safety';
-import { CONFIG } from '../../config/config';
+import { CONFIG, TOKENS } from '../config/config';
 import { JupiterQuoteResponse } from '../jupiter/types';
 
 // Mock quote data (example of what Jupiter returns)

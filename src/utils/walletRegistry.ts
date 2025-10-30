@@ -1,144 +1,161 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair } from '@solana/web3.js';
 import bs58 from 'bs58';
 
-interface AgentWallet {
-  agentId: string;
-  publicKey: string;
+export interface AgentWallet {
   name: string;
-  type: 'treasury' | 'agent' | 'multisig';
+  address: string;
+  publicKey?: string;
+  role: string;
+  dailyLimit: number;
   spendingLimit?: number;
-  permissions?: string[];
+  agentId?: string;
+  type?: string;
   services?: string[];
-  revenueShare?: number;
-  governanceFee?: number;
-  createdAt: string;
+  keypair?: Keypair;
 }
 
-interface WalletWithKeypair extends AgentWallet {
-  keypair?: Keypair;
+export interface WalletWithKeypair extends AgentWallet {
+  keypair: Keypair;
+  address: string;
+  agentId: string;
+  type: string;
+  publicKey: string;
 }
 
 const walletRegistry: AgentWallet[] = [
   {
-    agentId: 'temne-abara-nation',
-    publicKey: '6QKbYCqU3SDp1jgcFGcRRwpekQY2CEVK7AMVHpU8iWSH',
-    name: 'Temne Abara Nation Treasury',
-    type: 'treasury',
-    revenueShare: 0.10,
-    permissions: ['send', 'receive', 'governance', 'delegate'],
-    createdAt: '2025-10-29T00:00:00Z'
+    name: 'trading-bot',
+    address: 'TradeBotxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'TradeBotxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'trading-bot-001',
+    type: 'trading',
+    role: 'Automated Trading',
+    dailyLimit: 100,
+    spendingLimit: 100
   },
   {
-    agentId: 'midnitebotbank',
-    publicKey: '3Amc3tkRvijtrRtE6XVAkYd8UxF9VKqm7mqDdyT6FPWm',
-    name: 'Midnitebotbank Operational Reserve',
-    type: 'treasury',
-    permissions: ['send', 'receive', 'fund-agents'],
-    createdAt: '2025-10-29T00:00:00Z'
+    name: 'liquidity-manager',
+    address: 'LiquidityMgrxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'LiquidityMgrxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'liquidity-mgr-001',
+    type: 'liquidity',
+    role: 'LP Management',
+    dailyLimit: 500,
+    spendingLimit: 500
   },
   {
-    agentId: 'trading-bot',
-    publicKey: '3AxdPSVxZWFRJUhw3BbRA69vbMvVCQBeSz3Fv7hiQDnf',
-    name: 'Jupiter Trading Bot',
-    type: 'agent',
+    name: 'arbitrage-bot',
+    address: 'ArbitrageBotxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'ArbitrageBotxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'arbitrage-bot-001',
+    type: 'arbitrage',
+    role: 'Cross-DEX Arbitrage',
+    dailyLimit: 200,
+    spendingLimit: 200
+  },
+  {
+    name: 'market-maker',
+    address: 'MarketMakerxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'MarketMakerxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'market-maker-001',
+    type: 'market-making',
+    role: 'Order Book MM',
+    dailyLimit: 300,
+    spendingLimit: 300
+  },
+  {
+    name: 'yield-optimizer',
+    address: 'YieldOptimizerxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'YieldOptimizerxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'yield-optimizer-001',
+    type: 'yield',
+    role: 'Yield Farming',
+    dailyLimit: 150,
+    spendingLimit: 150
+  },
+  {
+    name: 'risk-manager',
+    address: 'RiskManagerxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'RiskManagerxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'risk-manager-001',
+    type: 'risk',
+    role: 'Portfolio Risk',
+    dailyLimit: 50,
+    spendingLimit: 50
+  },
+  {
+    name: 'fee-collector',
+    address: 'FeeCollectorxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'FeeCollectorxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'fee-collector-001',
+    type: 'revenue',
+    role: 'Revenue Collection',
+    dailyLimit: 1000,
+    spendingLimit: 1000
+  },
+  {
+    name: 'midnight-zkproof',
+    address: 'MidnightZKProofxxxxxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'MidnightZKProofxxxxxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'midnight-zkproof-001',
+    type: 'midnight',
+    role: 'zkProof Consulting',
+    dailyLimit: 200,
+    spendingLimit: 200,
+    services: ['zkProof consulting', 'Privacy analysis']
+  },
+  {
+    name: 'midnight-compliance',
+    address: 'MidnightCompliancexxxxxxxxxxxxxxxxxxxxxx',
+    publicKey: 'MidnightCompliancexxxxxxxxxxxxxxxxxxxxxx',
+    agentId: 'midnight-compliance-001',
+    type: 'midnight',
+    role: 'Compliance Oracle',
+    dailyLimit: 500,
     spendingLimit: 500,
-    permissions: ['send', 'receive', 'pay-x402', 'trade'],
-    createdAt: '2025-10-29T00:00:00Z'
-  },
-  {
-    agentId: 'akil-agent',
-    publicKey: '3AxdPSVxZWFRJUhw3BbRA69vbMvVCQBeSz3Fv7hiQDnf',
-    name: 'Akil Agent Wallet',
-    type: 'agent',
-    spendingLimit: 100,
-    permissions: ['send', 'receive', 'pay-x402'],
-    createdAt: '2025-10-29T00:00:00Z'
-  },
-  {
-    agentId: 'midnight-integration-agent',
-    publicKey: '7xbS8JuRLoVeQsb1Sp6Bc4ESShp6LEb2eoJtjohr65KK',
-    name: 'Midnight Integration Specialist',
-    type: 'agent',
-    revenueShare: 0.90,
-    governanceFee: 0.10,
-    spendingLimit: 1000,
-    permissions: ['send', 'receive', 'provide-data', 'pay-x402'],
-    services: ['midnight-zkproof-consulting', 'midnight-integration-analysis', 'midnight-smart-contract-templates'],
-    createdAt: '2025-10-29T06:00:00Z'
-  },
-  {
-    agentId: 'midnight-compliance-agent',
-    publicKey: '4ppPain22Fx54vXvE4Fvk7cYjx4emkfTHVAQpobc4pLv',
-    name: 'Midnight Compliance Oracle',
-    type: 'agent',
-    revenueShare: 0.90,
-    governanceFee: 0.10,
-    spendingLimit: 500,
-    permissions: ['send', 'receive', 'provide-compliance', 'pay-x402'],
-    services: ['midnight-compliance-data', 'midnight-regulatory-guidance', 'midnight-audit-trails'],
-    createdAt: '2025-10-29T06:00:00Z'
-  },
-  {
-    agentId: 'midnight-developer-agent',
-    publicKey: 'FXL7intKqJPSvXorpNLePakfRbjqs3iJU18ftSZ9GVTr',
-    name: 'Midnight Developer Assistant',
-    type: 'agent',
-    revenueShare: 0.90,
-    governanceFee: 0.10,
-    spendingLimit: 300,
-    permissions: ['send', 'receive', 'provide-code', 'pay-x402'],
-    services: ['midnight-api-docs', 'midnight-sdk-examples', 'midnight-integration-patterns'],
-    createdAt: '2025-10-29T06:00:00Z'
+    services: ['Regulatory compliance', 'Risk assessment']
   }
 ];
 
-export function getAgentWallet(agentId: string): WalletWithKeypair | null {
-  const wallet = walletRegistry.find(w => w.agentId === agentId);
-  if (!wallet) {
-    console.error(`❌ Wallet not found for agent: ${agentId}`);
-    return null;
+export function getAgentWallet(name: string): WalletWithKeypair | null {
+  const wallet = walletRegistry.find(w => w.name === name);
+  if (!wallet) return null;
+
+  // Try to load keypair from environment
+  const privateKeyEnv = `${name.toUpperCase().replace('-', '_')}_PRIVATE_KEY`;
+  const privateKey = process.env[privateKeyEnv] || process.env.WALLET_PRIVATE_KEY;
+
+  let keypair: Keypair;
+  
+  if (privateKey) {
+    try {
+      keypair = Keypair.fromSecretKey(bs58.decode(privateKey));
+    } catch (error) {
+      console.error(`Failed to load keypair for ${name}:`, error);
+      keypair = Keypair.generate();
+    }
+  } else {
+    keypair = Keypair.generate();
   }
 
-  const privateKeyEnv = `${agentId.toUpperCase().replace(/-/g, '_')}_PRIVATE_KEY`;
-  const privateKey = process.env[privateKeyEnv];
-
-  if (!privateKey) {
-    console.warn(`⚠️ No private key found for ${agentId}. Read-only mode.`);
-    return { ...wallet, keypair: undefined };
-  }
-
-  try {
-    const keypair = Keypair.fromSecretKey(bs58.decode(privateKey));
-    return { ...wallet, keypair };
-  } catch (error) {
-    console.error(`❌ Invalid private key for ${agentId}`);
-    return { ...wallet, keypair: undefined };
-  }
+  return {
+    ...wallet,
+    keypair,
+    address: wallet.address,
+    publicKey: wallet.publicKey || wallet.address,
+    agentId: wallet.agentId || `${name}-001`,
+    type: wallet.type || 'general'
+  } as WalletWithKeypair;
 }
 
 export function getAllWallets(): AgentWallet[] {
-  return walletRegistry;
+  return [...walletRegistry];
+}
+
+export function getWalletByAddress(address: string): AgentWallet | null {
+  return walletRegistry.find(w => w.address === address) || null;
 }
 
 export function getMidnightAgents(): AgentWallet[] {
-  return walletRegistry.filter(w => w.agentId.startsWith('midnight-'));
+  return walletRegistry.filter(w => w.agentId?.startsWith('midnight-'));
 }
-
-export function registerWallet(wallet: AgentWallet): boolean {
-  const exists = walletRegistry.find(w => w.agentId === wallet.agentId);
-  if (exists) {
-    console.error(`❌ Agent ${wallet.agentId} already registered`);
-    return false;
-  }
-  walletRegistry.push({ ...wallet, createdAt: new Date().toISOString() });
-  console.log(`✅ Registered wallet for ${wallet.agentId}`);
-  return true;
-}
-
-export function hasPermission(agentId: string, permission: string): boolean {
-  const wallet = walletRegistry.find(w => w.agentId === agentId);
-  if (!wallet || !wallet.permissions) return false;
-  return wallet.permissions.includes(permission);
-}
-
-export const getRegistry = (): Readonly<AgentWallet[]> => walletRegistry;

@@ -1,6 +1,6 @@
 import { JupiterClient } from '../jupiter/client';
 import { SafetyChecker } from '../utils/safety';
-import { CONFIG, TOKENS } from '../../config/config';
+import { CONFIG, TOKENS } from '../config/config';
 
 async function main() {
   console.log('🚀 Jupiter Quote Example\n');

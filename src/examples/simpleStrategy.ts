@@ -1,7 +1,7 @@
 import { PaperTradingManager } from '../paperTrading/manager';
 import { JupiterClient } from '../jupiter/client';
 import { SafetyChecker } from '../utils/safety';
-import { CONFIG } from '../../config/config';
+import { CONFIG, TOKENS } from '../config/config';
 
 /**
  * Simple Mean Reversion Strategy (Mock Example)

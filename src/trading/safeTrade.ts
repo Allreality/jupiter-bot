@@ -67,5 +67,109 @@ export class SafeTradeExecutor {
       const balance = await this.connection.getBalance(new PublicKey(this.wallet.address));
       const solBalance = balance / LAMPORTS_PER_SOL;
       
-      console.log(`💰 Current balance: ${solBalance.toFixe
-EOF
+      console.log(`💰 Current balance: ${solBalance.toFixed(4)} SOL`);
+      
+      if (solBalance < params.amount) {
+        return {
+          success: false,
+          error: `Insufficient balance. Have: ${solBalance.toFixed(4)} SOL, Need: ${params.amount} SOL`
+        };
+      }
+
+      // Safety check 3: Get quote from Raydium
+      console.log(`\n📊 Getting quote for ${params.amount} SOL...`);
+      const quote = await this.raydiumClient.getQuote(
+        params.inputMint,
+        params.outputMint,
+        params.amount
+      );
+
+      console.log(`💵 Price: $${quote.price.toFixed(2)}`);
+      console.log(`📉 Price Impact: ${quote.priceImpact.toFixed(2)}%`);
+
+      // Safety check 4: Price impact validation
+      if (quote.priceImpact > this.MAX_PRICE_IMPACT) {
+        return {
+          success: false,
+          error: `Price impact too high: ${quote.priceImpact.toFixed(2)}% (max: ${this.MAX_PRICE_IMPACT}%)`
+        };
+      }
+
+      // Safety check 5: Get technical analysis
+      console.log(`\n📈 Running technical analysis...`);
+      const prices = [quote.price]; // In real scenario, would have price history
+      const rsi = calculateRSI(prices);
+      const macd = calculateMACD(prices);
+      const signal = generateTradingSignal(rsi, macd);
+
+      console.log(`📊 RSI: ${rsi.value.toFixed(2)} (${rsi.signal})`);
+      console.log(`📊 MACD: ${macd.histogram.toFixed(4)} (${macd.crossover})`);
+      console.log(`🎯 Signal: ${signal.action} (${signal.confidence}% confidence)`);
+
+      // Safety check 6: Signal confirmation
+      if (signal.confidence < 70) {
+        console.log(`\n⚠️  Low confidence signal. Skipping trade.`);
+        return {
+          success: false,
+          error: `Signal confidence too low: ${signal.confidence}%`,
+          analysis: { rsi, macd, signal }
+        };
+      }
+
+      // Paper trading mode (safe by default)
+      console.log(`\n📝 PAPER TRADE (simulation only)`);
+      console.log(`✅ Trade would execute:`);
+      console.log(`   Input: ${params.amount} SOL`);
+      console.log(`   Output: ~${quote.outputAmount.toFixed(2)} USDC`);
+      console.log(`   Price: $${quote.price.toFixed(2)}`);
+      console.log(`   Slippage: ${params.maxSlippage || 50} bps`);
+
+      return {
+        success: true,
+        signature: 'PAPER_TRADE_' + Date.now(),
+        quote,
+        analysis: { rsi, macd, signal }
+      };
+
+    } catch (error: any) {
+      console.error('❌ Trade execution error:', error.message);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get current portfolio value
+   */
+  async getPortfolioValue(): Promise<number> {
+    const balance = await this.connection.getBalance(new PublicKey(this.wallet.address));
+    return balance / LAMPORTS_PER_SOL;
+  }
+
+  /**
+   * Check if safe to trade based on market conditions
+   */
+  async isSafeToTrade(): Promise<{ safe: boolean; reason?: string }> {
+    try {
+      // Check wallet balance
+      const balance = await this.getPortfolioValue();
+      if (balance < this.MIN_TRADE_SIZE) {
+        return { 
+          safe: false, 
+          reason: `Insufficient balance: ${balance.toFixed(4)} SOL` 
+        };
+      }
+
+      // All checks passed
+      return { safe: true };
+
+    } catch (error: any) {
+      return { 
+        safe: false, 
+        reason: `Safety check failed: ${error.message}` 
+      };
+    }
+  }
+}
